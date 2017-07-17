@@ -1,0 +1,11 @@
+[package]
+name = "rustdoc"
+version = "0.1.0"
+authors = ["QuietMisdreavus <grey@quietmisdreavus.net>"]
+
+[dependencies]
+
+[dependencies.syn]
+version = "0.11.11"
+default-features = false
+features = ["full", "parsing"]
