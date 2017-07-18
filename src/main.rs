@@ -45,6 +45,40 @@ fn flatten_docs(attrs: &[syn::Attribute]) -> String {
     ret
 }
 
+fn trim_leading_spaces(dox: &mut String) {
+    let mut count: Option<usize> = None;
+
+    for line in dox.lines() {
+        if line.is_empty() {
+            continue;
+        }
+
+        let mut first = true;
+        let lead = line.matches(move |ch| {
+            if first {
+                first = ch == ' ';
+                first
+            } else {
+                false
+            }
+        }).count();
+
+        if count.is_none() {
+            count = Some(lead);
+        } else {
+            count = std::cmp::min(count, Some(lead));
+        }
+    }
+
+    if let Some(count) = count {
+        let pat = " ".repeat(count);
+        *dox = dox.replacen(&pat, "", 1);
+
+        let pat = "\n".to_string() + &pat;
+        *dox = dox.replace(&pat, "\n");
+    }
+}
+
 fn main() {
     let manifest_root = PathBuf::from(ROOT);
     //TODO: de-hardcode crate root
@@ -54,7 +88,8 @@ fn main() {
     let mod_text = read_all_text(&crate_root).unwrap();
     let krate = syn::parse_crate(&mod_text).unwrap();
 
-    let dox = flatten_docs(&krate.attrs);
+    let mut dox = flatten_docs(&krate.attrs);
+    trim_leading_spaces(&mut dox);
 
     println!("{}", dox);
 }
